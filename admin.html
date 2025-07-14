@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Radio FM</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="admin-app">
+        <!-- Sidebar de navegación -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header">
+                <img src="img/logo-white.png" alt="Radio FM" class="logo">
+                <h2 class="station-name">Radio FM</h2>
+            </div>
+            
+            <nav class="admin-nav">
+                <ul>
+                    <li class="active">
+                        <a href="#">
+                            <i class="fas fa-bullhorn"></i>
+                            <span>Anuncios</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Programación</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-users"></i>
+                            <span>Clientes</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-file-invoice"></i>
+                            <span>Facturación</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Estadísticas</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="user-panel">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div>
+                        <div class="user-name" id="adminName">Administrador</div>
+                        <div class="user-role">Super Admin</div>
+                    </div>
+                </div>
+                <button id="logout" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Contenido principal -->
+        <main class="admin-content">
+            <header class="content-header">
+                <h1>
+                    <i class="fas fa-bullhorn"></i>
+                    Gestión de Anuncios
+                </h1>
+                <div class="header-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Buscar anuncios...">
+                    </div>
+                    <button class="btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Nuevo Anuncio
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-grid">
+                <!-- Panel de creación -->
+                <section class="create-panel">
+                    <div class="panel-header">
+                        <h2>
+                            <i class="fas fa-plus-circle"></i>
+                            Crear Nuevo Anuncio
+                        </h2>
+                    </div>
+                    <form id="announcementForm" class="create-form">
+                        <div class="form-group">
+                            <label for="clientName">
+                                <i class="fas fa-building"></i>
+                                Cliente
+                            </label>
+                            <input type="text" id="clientName" required placeholder="Nombre del cliente">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="program">
+                                    <i class="fas fa-tv"></i>
+                                    Programa
+                                </label>
+                                <select id="program" required>
+                                    <option value="">Seleccionar programa</option>
+                                    <option value="Matutino">Matutino (6:00-10:00)</option>
+                                    <option value="Mediodía">Mediodía (12:00-14:00)</option>
+                                    <option value="Tarde">Tarde (15:00-18:00)</option>
+                                    <option value="Noche">Noche (19:00-22:00)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="scheduleTime">
+                                    <i class="fas fa-clock"></i>
+                                    Hora
+                                </label>
+                                <input type="time" id="scheduleTime" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="announcementText">
+                                <i class="fas fa-align-left"></i>
+                                Texto del anuncio
+                            </label>
+                            <textarea id="announcementText" rows="4" required placeholder="Ingrese el texto a transmitir..."></textarea>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="invoiceNumber">
+                                    <i class="fas fa-file-invoice"></i>
+                                    N° Factura/Boleta
+                                </label>
+                                <input type="text" id="invoiceNumber" required placeholder="Ej: F001-001">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="priority">
+                                    <i class="fas fa-exclamation"></i>
+                                    Prioridad
+                                </label>
+                                <select id="priority">
+                                    <option value="normal">Normal</option>
+                                    <option value="high">Alta</option>
+                                    <option value="urgent">Urgente</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="reset" class="btn-secondary">
+                                <i class="fas fa-undo"></i>
+                                Limpiar
+                            </button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i>
+                                Guardar Anuncio
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Panel de listado -->
+                <section class="list-panel">
+                    <div class="panel-header">
+                        <h2>
+                            <i class="fas fa-list"></i>
+                            Anuncios Programados
+                        </h2>
+                        <div class="panel-filters">
+                            <div class="filter-group">
+                                <label for="filterDate">
+                                    <i class="fas fa-calendar-day"></i>
+                                    Fecha
+                                </label>
+                                <input type="date" id="filterDate">
+                            </div>
+                            <div class="filter-group">
+                                <label for="filterStatus">
+                                    <i class="fas fa-filter"></i>
+                                    Estado
+                                </label>
+                                <select id="filterStatus">
+                                    <option value="all">Todos</option>
+                                    <option value="pending">Pendientes</option>
+                                    <option value="completed">Completados</option>
+                                </select>
+                            </div>
+                            <button id="applyFilter" class="btn-filter">
+                                <i class="fas fa-search"></i>
+                                Filtrar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="announcements-table">
+                        <div class="table-header">
+                            <div class="th">Hora</div>
+                            <div class="th">Cliente</div>
+                            <div class="th">Programa</div>
+                            <div class="th">Estado</div>
+                            <div class="th">Acciones</div>
+                        </div>
+                        
+                        <div id="adminAnnouncementsList" class="table-body">
+                            <!-- Anuncios se cargarán aquí -->
+                            <div class="empty-state">
+                                <i class="fas fa-info-circle"></i>
+                                <p>No hay anuncios programados</p>
+                                <small>Comience creando un nuevo anuncio</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-footer">
+                        <div class="pagination-info">
+                            Mostrando <span>1-5</span> de <span>12</span> anuncios
+                        </div>
+                        <div class="pagination-controls">
+                            <button class="pagination-btn" disabled>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="pagination-btn active">1</button>
+                            <button class="pagination-btn">2</button>
+                            <button class="pagination-btn">3</button>
+                            <button class="pagination-btn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
