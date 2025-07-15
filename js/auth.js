@@ -18,10 +18,10 @@ const systemUsers = [
         permissions: ['create', 'edit', 'view']
     },
     {
-        username: 'produccion',
-        password: 'prod2023',
+        username: 'secretaria',
+        password: 'sec2023',
         name: 'Equipo Producción',
-        role: 'production',
+        role: 'secretaria',
         permissions: ['view', 'status']
     }
 ];
@@ -123,8 +123,8 @@ function handleLogin(e) {
             window.location.href = 'admin.html';
         } else if (user.role === 'marketing') {
             window.location.href = 'marketing.html';
-        } else if (user.role === 'production') {
-            window.location.href = '#';
+        } else if (user.role === 'secretaria') {
+            window.location.href = 'secretaria.html';
         }
     } else {
         showLoginError('Usuario o contraseña incorrectos');

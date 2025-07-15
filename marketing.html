@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="css/marketing.css">
 </head>
 <body>
-    <div class="admin-container">
+    <div class="marketing-container">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
@@ -19,6 +19,7 @@
             <nav>
                 <ul>
                     <li class="active"><a href="#"><i class="fas fa-bullhorn"></i> Publicidad</a></li>
+                    <li><a href="#"><i class="fas fa-file-alt"></i> Hojas de Pauta</a></li>
                     <li><a href="#"><i class="fas fa-chart-line"></i> Estadísticas</a></li>
                 </ul>
             </nav>
@@ -33,75 +34,203 @@
                 </button>
             </header>
 
-            <!-- Formulario -->
-            <section class="card">
-                <h2><i class="fas fa-plus-circle"></i> Nueva Publicidad</h2>
-                <form id="publicidadForm" class="form-grid">
-                    <div class="form-group">
-                        <label for="clientName"><i class="fas fa-building"></i> Cliente</label>
-                        <input type="text" id="clientName" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="program"><i class="fas fa-list-alt"></i> Programa</label>
-                        <select id="program" required>
-                            <option value="Matutino">Matutino</option>
-                            <option value="Tarde">Tarde</option>
-                            <option value="Noche">Noche</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="scheduleTime"><i class="fas fa-clock"></i> Hora</label>
-                        <input type="time" id="scheduleTime" required>
-                    </div>
-                    
-                    <div class="form-group full-width">
-                        <label for="announcementText"><i class="fas fa-align-left"></i> Mensaje</label>
-                        <textarea id="announcementText" rows="3"></textarea>
-                    </div>
-                    
-                    <div class="form-group full-width">
-                        <label for="audioFile"><i class="fas fa-music"></i> Audio (MP3/WAV)</label>
-                        <div class="file-upload">
-                            <input type="file" id="audioFile" accept="audio/*" required>
-                            <span id="fileName">No se ha seleccionado ningún archivo</span>
-                            <button type="button" class="btn-browse"><i class="fas fa-folder-open"></i> Examinar</button>
+            <div class="content-grid">
+                <!-- Formulario de Publicidad -->
+                <section class="form-section">
+                    <div class="card form-card">
+                        <div class="form-tabs">
+                            <button class="tab-btn active" data-tab="publicidad">Publicidad</button>
+                            <button class="tab-btn" data-tab="pauta">Hoja de Pauta</button>
                         </div>
-                        <audio id="audioPreview" controls></audio>
-                    </div>
-                    
-                    <div class="form-actions full-width">
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-save"></i> Guardar Publicidad
-                        </button>
-                    </div>
-                </form>
-            </section>
 
-            <!-- Listado -->
-            <section class="card">
-                <h2><i class="fas fa-list"></i> Publicidades Registradas</h2>
-                <div class="table-responsive">
-                    <table id="publicidadTable">
-                        <thead>
-                            <tr>
-                                <th><i class="fas fa-building"></i> Cliente</th>
-                                <th><i class="fas fa-list-alt"></i> Programa</th>
-                                <th><i class="fas fa-clock"></i> Hora</th>
-                                <th><i class="fas fa-check-circle"></i> Estado</th>
-                                <th><i class="fas fa-cog"></i> Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Datos se cargarán con JavaScript -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+                        <!-- Formulario de Publicidad Básica -->
+                        <div id="publicidad-form" class="tab-content active">
+                            <h2><i class="fas fa-plus-circle"></i> Nueva Publicidad</h2>
+                            <form id="basicPublicidadForm">
+                                <div class="form-group">
+                                    <label for="clientName"><i class="fas fa-building"></i> Cliente</label>
+                                    <input type="text" id="clientName" required>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="program"><i class="fas fa-list-alt"></i> Programa</label>
+                                        <select id="program" required>
+                                            <option value="Matutino">Matutino</option>
+                                            <option value="Tarde">Tarde</option>
+                                            <option value="Noche">Noche</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="scheduleTime"><i class="fas fa-clock"></i> Hora</label>
+                                        <input type="time" id="scheduleTime" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="announcementText"><i class="fas fa-align-left"></i> Mensaje</label>
+                                    <textarea id="announcementText" rows="3"></textarea>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="audioFile"><i class="fas fa-music"></i> Audio</label>
+                                    <div class="file-upload">
+                                        <button type="button" class="btn-browse"><i class="fas fa-folder-open"></i> Seleccionar</button>
+                                        <input type="file" id="audioFile" accept="audio/*" required>
+                                        <span id="fileName">Ningún archivo seleccionado</span>
+                                    </div>
+                                    <audio id="audioPreview" controls class="audio-preview"></audio>
+                                </div>
+                                
+                                <button type="submit" class="btn-primary">
+                                    <i class="fas fa-save"></i> Guardar Publicidad
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Formulario Completo de Hoja de Pauta -->
+                        <div id="pauta-form" class="tab-content">
+                            <h2><i class="fas fa-file-alt"></i> Hoja de Pauta Completa</h2>
+                            <form id="fullPautaForm">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="pautaNumber">N° Pauta:</label>
+                                        <input type="text" id="pautaNumber" value="00405-2025" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="pautaDate">Fecha Emisión:</label>
+                                        <input type="date" id="pautaDate" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="pautaClient">Señores:</label>
+                                    <input type="text" id="pautaClient" required>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="pautaRuc">RUC:</label>
+                                        <input type="text" id="pautaRuc">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="pautaCity">Ciudad:</label>
+                                        <input type="text" id="pautaCity" value="PUNO - PERU" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="pautaProduct">Producto:</label>
+                                        <input type="text" id="pautaProduct" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="pautaReason">Motivo:</label>
+                                        <input type="text" id="pautaReason">
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="pautaPeriod">Periodo:</label>
+                                        <input type="text" id="pautaPeriod">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="pautaLanguage">Idioma:</label>
+                                        <select id="pautaLanguage">
+                                            <option value="CASTELLANO">CASTELLANO</option>
+                                            <option value="QUECHUA">QUECHUA</option>
+                                            <option value="AIMARA">AIMARA</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="pautaDuration">Duración (seg):</label>
+                                        <input type="number" id="pautaDuration" min="0" value="0">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="pautaSpots">Cantidad Spots:</label>
+                                        <input type="text" id="pautaSpots" value="0X SPOT">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="pautaScheduleType">Tipo de Horarios:</label>
+                                    <select id="pautaScheduleType">
+                                        <option value="ROTATIVOS">ROTATIVOS</option>
+                                        <option value="ESTELAR">ESTELAR</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Horarios Programados:</label>
+                                    <div id="scheduleContainer" class="schedule-grid">
+                                        <!-- Horarios se agregarán dinámicamente -->
+                                    </div>
+                                    <button type="button" id="addSchedule" class="btn-secondary">
+                                        <i class="fas fa-plus"></i> Agregar Horario
+                                    </button>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="pautaCost">Costo con IGV:</label>
+                                    <input type="text" id="pautaCost" value="S/. 0.00">
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn-primary">
+                                        <i class="fas fa-file-excel"></i> Generar Pauta
+                                    </button>
+                                    <button type="button" id="printPauta" class="btn-secondary">
+                                        <i class="fas fa-print"></i> Imprimir
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tabla de Publicidades -->
+                <section class="table-section">
+                    <div class="card table-card">
+                        <div class="table-header">
+                            <h2><i class="fas fa-list"></i> Publicidades Registradas</h2>
+                            <div class="table-controls">
+                                <input type="text" id="searchInput" placeholder="Buscar por cliente...">
+                                <select id="filterProgram">
+                                    <option value="">Todos los programas</option>
+                                    <option value="Matutino">Matutino</option>
+                                    <option value="Tarde">Tarde</option>
+                                    <option value="Noche">Noche</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table id="publicidadTable">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente</th>
+                                        <th>Programa</th>
+                                        <th>Hora</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Datos se cargarán con JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </main>
     </div>
 
-    <script src="marketing.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="js/marketing.js"></script>
 </body>
 </html>
