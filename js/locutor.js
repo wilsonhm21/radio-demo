@@ -14,6 +14,16 @@ function initLocutorView() {
     
     // Verificar anuncios cada minuto (ajustado a cada 10 segundos para pruebas más rápidas)
     setInterval(checkForUpcomingAnnouncements, 10000); // Antes 60000 (1 minuto)
+
+    // *** NUEVA ADICIÓN: Escuchar cambios en localStorage para actualización automática ***
+    window.addEventListener('storage', (event) => {
+        // Solo recargar si el cambio fue en 'announcements'
+        if (event.key === 'announcements') {
+            console.log('Cambio detectado en localStorage (announcements). Recargando vista...');
+            loadAnnouncements(); // Vuelve a cargar y renderizar los anuncios
+            checkForUpcomingAnnouncements(); // Revisa también los próximos anuncios
+        }
+    });
 }
 
 // Actualizar fecha y hora actual
