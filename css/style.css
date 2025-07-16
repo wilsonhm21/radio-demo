@@ -11,6 +11,11 @@
     --light-gray: #e9ecef;
     --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     --transition: all 0.3s ease;
+
+    /* Colores específicos para tipos de anuncio */
+    --comunicado-color: #007bff; /* Azul */
+    --publicidad-color: #ff8c00; /* Naranja */
+    --pauta-color: #6f42c1;     /* Morado */
 }
 
 * {
@@ -160,7 +165,7 @@ body {
     100% { transform: scale(1); }
 }
 
-/* Announcements Grid - ESTILOS CORREGIDOS */
+/* Announcements Grid - ESTILOS MEJORADOS */
 .announcements-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -173,21 +178,38 @@ body {
     padding: 20px;
     box-shadow: var(--shadow);
     transition: var(--transition);
-    border-left: 4px solid var(--primary-color);
+    border-left: 4px solid var(--primary-color); /* Default border */
+    display: flex; /* Para organizar el contenido y el botón de play */
+    flex-direction: column;
+    justify-content: space-between; /* Empujar el botón play al final */
 }
 
+/* Colores de borde para cada tipo de anuncio */
+.announcement-card.announcement-type-comunicado {
+    border-left-color: var(--comunicado-color); /* Azul */
+}
+
+.announcement-card.announcement-type-publicidad {
+    border-left-color: var(--publicidad-color); /* Naranja */
+}
+
+.announcement-card.announcement-type-pauta {
+    border-left-color: var(--pauta-color); /* Morado */
+}
+
+
 .announcement-card.pending {
-    border-left-color: var(--accent-color);
+    /* Mantiene el color de su tipo */
 }
 
 .announcement-card.current {
-    border-left-color: var(--danger-color);
+    border-left-color: var(--danger-color); /* Rojo para el que está en vivo */
     animation: pulse-border 1.5s infinite;
 }
 
 @keyframes pulse-border {
     0% { border-left-color: var(--danger-color); }
-    50% { border-left-color: #ff6b9d; }
+    50% { border-left-color: #ff6b9d; } /* Rojo más claro */
     100% { border-left-color: var(--danger-color); }
 }
 
@@ -234,6 +256,7 @@ body {
     padding-left: 24px;
     position: relative;
     font-style: italic;
+    flex-grow: 1; /* Para que el texto ocupe el espacio disponible antes del botón */
 }
 
 .announcement-text::before {
@@ -259,21 +282,47 @@ body {
     margin-top: 10px;
 }
 
-.empty-state {
+.empty-announcement { /* Cambiado de .empty-state para un estado vacío específico de anuncios */
     grid-column: 1 / -1;
     text-align: center;
     padding: 60px 20px;
     color: var(--gray-color);
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
 }
 
-.empty-state i {
+.empty-announcement i {
     font-size: 3rem;
     margin-bottom: 15px;
     color: var(--light-gray);
 }
 
-.empty-state p {
+.empty-announcement p {
     font-size: 1.1rem;
+}
+
+/* Play Button on Announcement Card */
+.play-button {
+    margin-top: 15px;
+    padding: 10px 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: fit-content; /* Ajustar el ancho al contenido */
+    align-self: flex-end; /* Alinear a la derecha/final de la tarjeta */
+}
+
+.play-button:hover {
+    background-color: var(--secondary-color);
 }
 
 /* Login View */
@@ -403,7 +452,22 @@ body {
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     animation: modalFadeIn 0.3s ease-out;
+    border-top: 10px solid var(--danger-color); /* Color por defecto, será sobrescrito */
 }
+
+/* Colores de borde superior del modal según el tipo */
+.announcement-modal.modal-type-comunicado .modal-container {
+    border-top-color: var(--comunicado-color); /* Azul */
+}
+
+.announcement-modal.modal-type-publicidad .modal-container {
+    border-top-color: var(--publicidad-color); /* Naranja */
+}
+
+.announcement-modal.modal-type-pauta .modal-container {
+    border-top-color: var(--pauta-color); /* Morado */
+}
+
 
 @keyframes modalFadeIn {
     from { opacity: 0; transform: translateY(20px); }
@@ -411,7 +475,7 @@ body {
 }
 
 .modal-header {
-    background-color: var(--danger-color);
+    background-color: var(--dark-color); /* Cambiado a un color oscuro para contraste */
     color: white;
     padding: 1.5rem;
     display: flex;
@@ -432,7 +496,7 @@ body {
 .live-indicator {
     display: flex;
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--danger-color); /* Color de peligro */
     padding: 5px 10px;
     border-radius: 50px;
     font-size: 0.8rem;

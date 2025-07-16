@@ -108,6 +108,13 @@
                 </div>
                 <div class="announcement-content" id="modalText"></div>
                 <div class="timer-display" id="modalTimer"></div>
+                
+                <!-- INICIO DEL CAMBIO: Agregando el reproductor de audio -->
+                <audio id="modalAudioPlayer" controls style="width: 100%; margin-top: 15px; display: none;">
+                    <source id="modalAudioSource" src="" type="audio/mpeg">
+                    Tu navegador no soporta el elemento de audio.
+                </audio>
+                <!-- FIN DEL CAMBIO -->
             </div>
             
             <div class="modal-footer">

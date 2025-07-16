@@ -8,10 +8,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Configurar eventos principales
     document.getElementById('logout').addEventListener('click', handleLogout);
+    
+    document.querySelector('.btn-browse').addEventListener('click', () => {
+        document.getElementById('audioFile').click();
+    });
+    
     document.getElementById('audioFile').addEventListener('change', handleAudioUpload);
+
     document.getElementById('basicPublicidadForm').addEventListener('submit', handleBasicSubmit);
     document.getElementById('fullPautaForm').addEventListener('submit', handlePautaSubmit);
     document.getElementById('addSchedule').addEventListener('click', addScheduleTime);
+    
+    // NUEVO: Listener para el botón de agregar horario en el formulario de Publicidad
+    document.getElementById('addPublicidadSchedule').addEventListener('click', () => addPublicidadScheduleTime());
+
     document.getElementById('searchInput').addEventListener('input', filterPublicidades);
     document.getElementById('filterProgram').addEventListener('change', filterPublicidades);
     
@@ -20,10 +30,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inicializar formulario de pauta
     initPautaForm();
+    
+    // --- CORRECCIÓN CLAVE AQUÍ: Asegurarse de que haya al menos UN campo de horario vacío en publicidad al cargar ---
+    // Solo si no hay ninguno, para evitar duplicados iniciales.
+    const publicidadScheduleContainer = document.getElementById('publicidadScheduleContainer');
+    if (publicidadScheduleContainer.children.length === 0) {
+        addPublicidadScheduleTime(); 
+    }
+
+    // --- NUEVO: Configurar interconexión de formularios ---
+    setupPautaToPublicidadLink();
 
     // Cargar datos iniciales
     loadPublicidades();
 });
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* ===== FUNCIONES PRINCIPALES ===== */
 
@@ -31,6 +53,8 @@ function handleLogout() {
     localStorage.removeItem('currentUser');
     window.location.href = 'index.html';
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 function handleAudioUpload(e) {
     const file = e.target.files[0];
@@ -42,10 +66,13 @@ function handleAudioUpload(e) {
         audioPreview.style.display = 'block';
         audioPreview.src = URL.createObjectURL(file);
     } else {
-        fileName.textContent = 'No se ha seleccionado ningún archivo';
+        fileName.textContent = 'Ningún archivo seleccionado';
+        audioPreview.src = '';
         audioPreview.style.display = 'none';
     }
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* ===== SISTEMA DE PESTAÑAS ===== */
 
@@ -69,7 +96,39 @@ function setupTabs() {
     });
 }
 
-/* ===== FORMULARIO BÁSICO ===== */
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+/* ===== FORMULARIO BÁSICO (PUBLICIDAD) ===== */
+
+// Función para agregar un campo de horario y programa al formulario de publicidad
+function addPublicidadScheduleTime(initialTime = '', initialProgram = '') {
+    const container = document.getElementById('publicidadScheduleContainer');
+    const scheduleItem = document.createElement('div');
+    scheduleItem.className = 'schedule-item'; // Clase para estilos, si tienes
+    scheduleItem.innerHTML = `
+        <input type="time" class="publicidad-schedule-time" value="${initialTime}" required>
+        <select class="publicidad-schedule-program" required>
+            <option value="Matutino" ${initialProgram === 'Matutino' ? 'selected' : ''}>Matutino</option>
+            <option value="Tarde" ${initialProgram === 'Tarde' ? 'selected' : ''}>Tarde</option>
+            <option value="Noche" ${initialProgram === 'Noche' ? 'selected' : ''}>Noche</option>
+        </select>
+        <button type="button" class="btn-remove-schedule">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.appendChild(scheduleItem);
+
+    // Event listener para eliminar el horario
+    scheduleItem.querySelector('.btn-remove-schedule').addEventListener('click', () => {
+        container.removeChild(scheduleItem);
+        // CORRECCIÓN: Si eliminas el último horario, solo añade uno nuevo si el contenedor queda vacío.
+        if (container.children.length === 0) {
+            addPublicidadScheduleTime(); // Añade un campo vacío si se eliminó el último
+        }
+    });
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 function handleBasicSubmit(e) {
     e.preventDefault();
@@ -82,12 +141,27 @@ function handleBasicSubmit(e) {
         return;
     }
 
+    // NUEVO: Recopilar todos los horarios y programas del formulario de publicidad
+    // *** CORRECCIÓN CLAVE: FILTRAR HORARIOS VACÍOS ***
+    const publicitySchedules = Array.from(document.querySelectorAll('#publicidadScheduleContainer .schedule-item'))
+        .map(item => {
+            return {
+                time: item.querySelector('.publicidad-schedule-time').value,
+                program: item.querySelector('.publicidad-schedule-program').value
+            };
+        })
+        .filter(schedule => schedule.time !== ''); // Filtrar cualquier horario donde el campo de tiempo esté vacío
+
+    if (publicitySchedules.length === 0) {
+        showNotification('Debes agregar al menos un horario válido para la publicidad', 'error');
+        return;
+    }
+
     const newPublicidad = {
         id: Date.now(),
         type: 'publicidad',
         clientName: form.clientName.value,
-        program: form.program.value,
-        scheduleTime: form.scheduleTime.value,
+        horarios: publicitySchedules, // Esto ahora contendrá solo horarios válidos
         announcementText: form.announcementText.value,
         audio: audioFile.name,
         status: 'pending',
@@ -97,10 +171,18 @@ function handleBasicSubmit(e) {
 
     savePublicidad(newPublicidad);
     form.reset();
-    document.getElementById('fileName').textContent = 'No se ha seleccionado ningún archivo';
+    document.getElementById('fileName').textContent = 'Ningún archivo seleccionado';
     document.getElementById('audioPreview').style.display = 'none';
+    document.getElementById('audioPreview').src = '';
+    
+    // Limpiar y añadir un horario vacío por defecto después de guardar
+    document.getElementById('publicidadScheduleContainer').innerHTML = ''; 
+    addPublicidadScheduleTime(); // Añade un campo vacío para el siguiente registro
+    
     showNotification('Publicidad creada exitosamente', 'success');
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* ===== HOJA DE PAUTA ===== */
 
@@ -114,10 +196,16 @@ function initPautaForm() {
     document.getElementById('pautaDate').valueAsDate = today;
     
     // Agregar 3 horarios por defecto
-    for (let i = 0; i < 3; i++) {
-        addScheduleTime();
+    const scheduleContainer = document.getElementById('scheduleContainer');
+    // CORRECCIÓN: Solo añadir horarios si el contenedor está vacío.
+    if (scheduleContainer.children.length === 0) {
+        for (let i = 0; i < 3; i++) {
+            addScheduleTime();
+        }
     }
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 function addScheduleTime() {
     const container = document.getElementById('scheduleContainer');
@@ -125,6 +213,7 @@ function addScheduleTime() {
     scheduleItem.className = 'schedule-item';
     scheduleItem.innerHTML = `
         <input type="time" class="schedule-time" required>
+        <input type="text" class="schedule-program" placeholder="Programa (ej. Matutino)" required>
         <button type="button" class="btn-remove-schedule">
             <i class="fas fa-times"></i>
         </button>
@@ -134,23 +223,38 @@ function addScheduleTime() {
     // Agregar evento para eliminar horario
     scheduleItem.querySelector('.btn-remove-schedule').addEventListener('click', () => {
         container.removeChild(scheduleItem);
+        // CORRECCIÓN: Si eliminas el último horario, solo añade uno nuevo si el contenedor queda vacío.
+        if (container.children.length === 0) {
+            addScheduleTime(); // Añade un campo vacío si se eliminó el último
+        }
     });
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 function handlePautaSubmit(e) {
     e.preventDefault();
     
     const form = e.target;
-    const scheduleTimes = Array.from(document.querySelectorAll('.schedule-time')).map(input => input.value);
-    
-    if (scheduleTimes.length === 0) {
-        showNotification('Debes agregar al menos un horario', 'error');
+    // Obtener los horarios y programas de los campos dinámicos
+    // *** CORRECCIÓN CLAVE: FILTRAR HORARIOS VACÍOS ***
+    const scheduleEntries = Array.from(document.querySelectorAll('#scheduleContainer .schedule-item'))
+        .map(item => {
+            return {
+                time: item.querySelector('.schedule-time').value,
+                program: item.querySelector('.schedule-program').value
+            };
+        })
+        .filter(schedule => schedule.time !== '' && schedule.program !== ''); // Filtrar por tiempo Y programa
+
+    if (scheduleEntries.length === 0) {
+        showNotification('Debes agregar al menos un horario válido para la pauta', 'error');
         return;
     }
 
     const pautaData = {
         id: Date.now(),
-        type: 'pauta',
+        type: 'pauta', 
         pautaNumber: form.pautaNumber.value,
         fechaEmision: form.pautaDate.value,
         cliente: form.pautaClient.value,
@@ -162,7 +266,7 @@ function handlePautaSubmit(e) {
         duracion: form.pautaDuration.value,
         cantidadSpots: form.pautaSpots.value,
         tipoHorarios: form.pautaScheduleType.value,
-        horarios: scheduleTimes,
+        horarios: scheduleEntries, // Ahora guarda objetos {time, program} válidos
         costo: form.pautaCost.value,
         status: 'pending',
         createdAt: new Date().toISOString()
@@ -177,14 +281,18 @@ function handlePautaSubmit(e) {
     generatePautaExcel(pautaData);
     
     showNotification('Hoja de pauta generada exitosamente', 'success');
-    loadPublicidades();
+    form.reset(); // Resetear el formulario después de enviar
+    // Limpiar y reiniciar los horarios de pauta
+    document.getElementById('scheduleContainer').innerHTML = '';
+    initPautaForm(); // Re-inicializar para tener 3 campos de horarios por defecto
+    loadPublicidades(); // Recargar la tabla
 }
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 function generatePautaExcel(pautaData) {
-    // Crear libro de Excel
     const wb = XLSX.utils.book_new();
     
-    // Datos para la hoja de cálculo
     const wsData = [
         ["HOJA DE PAUTA", "", "", "", "", pautaData.pautaNumber],
         ["640 A.M. / 95.7 F.M.", "", "", "", "", ""],
@@ -194,7 +302,7 @@ function generatePautaExcel(pautaData) {
         ["CIUDAD:", "PUNO - PERU", "", "", "", ""],
         [],
         ["RADIO:", "ONDA AZUL ASOCIACION CIVIL", "", "ORDEN N°", pautaData.pautaNumber, ""],
-        ["UBICACIÓN:", "PUNO/PUNO/PUNO", "", "TOTAL DE AVISOS:", "0", ""],
+        ["UBICACIÓN:", "PUNO/PUNO/PUNO", "", "TOTAL DE AVISOS:", pautaData.cantidadSpots, ""],
         ["CLIENTE:", pautaData.cliente, "", "HORARIOS:", pautaData.tipoHorarios, ""],
         ["PRODUCTO:", pautaData.producto, "", "IDIOMA:", pautaData.idioma, ""],
         ["MOTIVO:", pautaData.motivo, "", "SEGUNDOS:", pautaData.duracion + '"', ""],
@@ -202,39 +310,72 @@ function generatePautaExcel(pautaData) {
         ["", "", "", "COSTO CON IGV:", pautaData.costo, ""],
         [],
         ["HORARIOS PROGRAMADOS"],
-        ...pautaData.horarios.map(horario => [horario])
+        ["HORA", "PROGRAMA"]
     ];
     
+    pautaData.horarios.forEach(entry => {
+        wsData.push([entry.time, entry.program]);
+    });
+
     const ws = XLSX.utils.aoa_to_sheet(wsData);
     XLSX.utils.book_append_sheet(wb, ws, "Pauta Publicitaria");
     
-    // Descargar el archivo
-    XLSX.writeFile(wb, `Pauta_${pautaData.pautaNumber}.xlsx`);
+    XLSX.writeFile(wb, `Pauta_${pautaData.cliente}_${pautaData.fechaEmision}.xlsx`);
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 /* ===== GESTIÓN DE PUBLICIDADES ===== */
 
 function savePublicidad(publicidad) {
     const announcements = JSON.parse(localStorage.getItem('announcements')) || [];
-    announcements.push(publicidad);
+    // Actualizar si existe, o añadir si es nueva
+    const existingIndex = announcements.findIndex(item => item.id === publicidad.id);
+    if (existingIndex > -1) {
+        announcements[existingIndex] = publicidad;
+    } else {
+        announcements.push(publicidad);
+    }
     localStorage.setItem('announcements', JSON.stringify(announcements));
     loadPublicidades();
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 function loadPublicidades() {
     const announcements = JSON.parse(localStorage.getItem('announcements')) || [];
     const tbody = document.querySelector('#publicidadTable tbody');
     tbody.innerHTML = '';
 
-    // Filtrar solo publicidades (no pautas completas)
+    // Filtrar tanto 'publicidad' como 'pauta' si quieres ver ambos tipos en esta tabla.
+    // O mantener solo 'publicidad' si esta tabla es específica para ellas.
+    // Para ver solo publicidades:
     const publicidades = announcements.filter(item => item.type === 'publicidad');
+    // Para ver ambos tipos (pauta y publicidad):
+    // const publicidades = announcements.filter(item => item.type === 'publicidad' || item.type === 'pauta');
+
 
     publicidades.forEach(pub => {
         const row = document.createElement('tr');
+        
+        let clientDisplayName = pub.clientName ?? 'Desconocido';
+        let announcementDisplayText = pub.announcementText ?? 'Sin texto de anuncio';
+
+        // Si es una pauta, ajusta la información que se muestra
+        if (pub.type === 'pauta') {
+            clientDisplayName = pub.cliente ?? 'Desconocido';
+            announcementDisplayText = `Pauta: "${pub.producto ?? 'N/A'}" (${pub.duracion ?? 'N/A'} seg) - ${pub.motivo ?? 'N/A'}`;
+        }
+
+        // Concatenar todos los horarios en una cadena para mostrar en la tabla
+        const horariosTexto = pub.horarios && pub.horarios.length > 0 
+                                 ? pub.horarios.map(h => `${h.time} (${h.program ?? 'N/A'})`).join(', ')
+                                 : 'No especificado';
+        
         row.innerHTML = `
-            <td>${pub.clientName}</td>
-            <td>${pub.program}</td>
-            <td>${pub.scheduleTime}</td>
+            <td>${clientDisplayName}</td>
+            <td>${horariosTexto}</td>
+            <td>${announcementDisplayText}</td> 
             <td><span class="status status-${pub.status}">${pub.status}</span></td>
             <td>
                 <button class="action-btn" onclick="editPublicidad(${pub.id})">
@@ -249,26 +390,29 @@ function loadPublicidades() {
     });
 }
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 function filterPublicidades() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const programFilter = document.getElementById('filterProgram').value;
+    const programFilter = document.getElementById('filterProgram').value.toLowerCase(); // Convertir a minúsculas
     const rows = document.querySelectorAll('#publicidadTable tbody tr');
     
     rows.forEach(row => {
         const clientName = row.cells[0].textContent.toLowerCase();
-        const program = row.cells[1].textContent;
+        const horariosText = row.cells[1].textContent.toLowerCase(); 
         
         const matchesSearch = clientName.includes(searchTerm);
-        const matchesProgram = programFilter === '' || program === programFilter;
+        const matchesProgram = programFilter === '' || horariosText.includes(`(${programFilter})`); // Buscar el programa entre paréntesis
         
         row.style.display = matchesSearch && matchesProgram ? '' : 'none';
     });
 }
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 /* ===== FUNCIONES DE INTERFAZ ===== */
 
 function showNotification(message, type) {
-    // Implementación básica - puedes reemplazar con Toastify o similar
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.textContent = message;
@@ -279,6 +423,8 @@ function showNotification(message, type) {
         setTimeout(() => notification.remove(), 500);
     }, 3000);
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 function editPublicidad(id) {
     const announcements = JSON.parse(localStorage.getItem('announcements'));
@@ -292,19 +438,41 @@ function editPublicidad(id) {
     // Llenar formulario
     const form = document.getElementById('basicPublicidadForm');
     form.clientName.value = publicidad.clientName;
-    form.program.value = publicidad.program;
-    form.scheduleTime.value = publicidad.scheduleTime;
     form.announcementText.value = publicidad.announcementText;
     
-    // Mostrar nombre de archivo (no se puede pre-cargar el archivo por seguridad)
-    document.getElementById('fileName').textContent = publicidad.audio || 'No se ha seleccionado ningún archivo';
+    // Limpiar horarios existentes en el formulario de publicidad antes de cargar los de la publicidad
+    const publicidadScheduleContainer = document.getElementById('publicidadScheduleContainer');
+    publicidadScheduleContainer.innerHTML = '';
+
+    // Cargar todos los horarios de la publicidad
+    if (publicidad.horarios && publicidad.horarios.length > 0) {
+        publicidad.horarios.forEach(h => {
+            addPublicidadScheduleTime(h.time, h.program);
+        });
+    } else {
+        // CORRECCIÓN: Si no hay horarios, añadir uno vacío por defecto
+        addPublicidadScheduleTime(); 
+    }
     
-    // Eliminar el registro antiguo
-    const updatedAnnouncements = announcements.filter(item => item.id !== id);
-    localStorage.setItem('announcements', JSON.stringify(updatedAnnouncements));
+    // Manejar el archivo de audio
+    const fileNameElement = document.getElementById('fileName');
+    const audioPreviewElement = document.getElementById('audioPreview');
+
+    if (publicidad.audio) {
+        fileNameElement.textContent = publicidad.audio;
+        // No podemos cargar el audio real desde el nombre del archivo, solo mostrar su nombre
+        // audioPreviewElement.src = `ruta/a/tus/audios/${publicidad.audio}`; // Si tienes una ruta conocida
+        audioPreviewElement.style.display = 'none'; // No se puede previsualizar si no está el path real
+    } else {
+        fileNameElement.textContent = 'Ningún archivo seleccionado';
+        audioPreviewElement.src = '';
+        audioPreviewElement.style.display = 'none';
+    }
     
     showNotification('Edita la publicidad y guarda los cambios', 'info');
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 function deletePublicidad(id) {
     if (confirm('¿Estás seguro de eliminar esta publicidad?')) {
@@ -316,7 +484,78 @@ function deletePublicidad(id) {
     }
 }
 
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 /* ===== FUNCIONES GLOBALES ===== */
-// Hacer funciones disponibles globalmente para eventos en línea
+// Hacer funciones disponibles globalmente para eventos en línea (como en los botones de tabla)
 window.editPublicidad = editPublicidad;
 window.deletePublicidad = deletePublicidad;
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// --- NUEVA FUNCIÓN PARA INTERCONEXIÓN ---
+function setupPautaToPublicidadLink() {
+    const pautaClientInput = document.getElementById('pautaClient');
+    const pautaProductInput = document.getElementById('pautaProduct');
+    const pautaDurationInput = document.getElementById('pautaDuration');
+    const pautaScheduleTypeSelect = document.getElementById('pautaScheduleType');
+    const pautaLanguageSelect = document.getElementById('pautaLanguage');
+
+    const clientNameInput = document.getElementById('clientName');
+    const announcementTextInput = document.getElementById('announcementText');
+    const publicidadScheduleContainer = document.getElementById('publicidadScheduleContainer'); // Referencia al nuevo contenedor
+
+    // Escuchar cambios en los campos relevantes del formulario de Pauta
+    pautaClientInput.addEventListener('input', updatePublicidadForm);
+    pautaProductInput.addEventListener('input', updatePublicidadForm);
+    pautaDurationInput.addEventListener('input', updatePublicidadForm);
+    pautaScheduleTypeSelect.addEventListener('change', updatePublicidadForm);
+    pautaLanguageSelect.addEventListener('change', updatePublicidadForm);
+
+    // Observar adiciones/remociones de horarios en la Pauta para actualizar Publicidad
+    const scheduleContainer = document.getElementById('scheduleContainer');
+    const config = { childList: true, subtree: true }; 
+    const observer = new MutationObserver(updatePublicidadForm);
+    observer.observe(scheduleContainer, config);
+
+    function updatePublicidadForm() {
+        // Copiar 'Señores' de Pauta a 'Cliente' de Publicidad
+        clientNameInput.value = pautaClientInput.value;
+
+        // Sugerencia para el mensaje de publicidad
+        const product = pautaProductInput.value;
+        const duration = pautaDurationInput.value;
+        const lang = pautaLanguageSelect.value;
+        const type = pautaScheduleTypeSelect.value;
+        
+        let message = `Publicidad para "${product}" (${duration} seg)`;
+        if (lang && lang !== 'CASTELLANO') {
+            message += ` en ${lang}`;
+        }
+        if (type && type !== 'ROTATIVOS') {
+            message += ` - Horario ${type}`;
+        }
+        announcementTextInput.value = message;
+
+        // NUEVA LÓGICA PARA MÚLTIPLES HORARIOS DE PUBLICIDAD
+        // 1. Limpiar horarios existentes en el formulario de publicidad
+        publicidadScheduleContainer.innerHTML = ''; 
+
+        // 2. Obtener todos los horarios y programas de la Pauta
+        const pautaScheduleItems = Array.from(document.querySelectorAll('#scheduleContainer .schedule-item'));
+        
+        if (pautaScheduleItems.length > 0) {
+            pautaScheduleItems.forEach(item => {
+                const time = item.querySelector('.schedule-time').value;
+                const program = item.querySelector('.schedule-program').value;
+                // Usar la nueva función para añadir cada horario al formulario de publicidad
+                addPublicidadScheduleTime(time, program); 
+            });
+        } else {
+            // Si no hay horarios en la pauta, añade uno vacío por defecto a la publicidad
+            addPublicidadScheduleTime(); 
+        }
+    }
+    // Ejecutar una vez al inicio para reflejar cualquier valor inicial
+    updatePublicidadForm();
+}
