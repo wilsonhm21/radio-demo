@@ -1,0 +1,269 @@
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5f5;
+}
+
+header {
+    background-color: #1a3e8c;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+h1, h2 {
+    margin: 0;
+}
+
+.contenedor-principal {
+    display: flex;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    gap: 30px;
+}
+
+.formulario-container {
+    flex: 1;
+    min-width: 350px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.tabla-container {
+    flex: 2;
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="time"],
+select,
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-actions {
+    margin-top: 25px;
+    display: flex;
+    justify-content: space-between;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #1a3e8c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #0d2b66;
+}
+
+#limpiar {
+    background-color: #6c757d;
+}
+
+#limpiar:hover {
+    background-color: #5a6268;
+}
+
+.programacion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.filtros {
+    display: flex;
+    gap: 10px;
+}
+
+.filtros select {
+    width: 150px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #1a3e8c;
+    color: white;
+    position: sticky;
+    top: 0;
+}
+
+tr:hover {
+    background-color: #f9f9f9;
+}
+
+.acciones {
+    white-space: nowrap;
+}
+
+.acciones button {
+    padding: 5px 10px;
+    margin-right: 5px;
+    font-size: 13px;
+}
+
+.acciones button:last-child {
+    background-color: #d9534f;
+}
+
+.acciones button:last-child:hover {
+    background-color: #c9302c;
+}
+
+@media (max-width: 1024px) {
+    .contenedor-principal {
+        flex-direction: column;
+    }
+    
+    .formulario-container,
+    .tabla-container {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .programacion-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .filtros {
+        width: 100%;
+    }
+    
+    .filtros select {
+        flex-grow: 1;
+    }
+    
+    th, td {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+}
+
+/* Estilos para la paginación */
+.paginacion-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    gap: 10px;
+}
+
+.paginacion-info {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.paginacion-controls {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.paginacion-btn {
+    padding: 5px 10px;
+    background-color: #1a3e8c;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.paginacion-btn:hover {
+    background-color: #0d2b66;
+}
+
+.paginacion-btn:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.numeros-pagina {
+    display: flex;
+    gap: 5px;
+}
+
+.numeros-pagina button {
+    min-width: 32px;
+    height: 32px;
+}
+
+.numeros-pagina button.active {
+    background-color: #0d2b66;
+    font-weight: bold;
+}
+
+.paginacion-registros {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.paginacion-registros select {
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}

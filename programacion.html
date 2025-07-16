@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Programación - Radio Onda Azul</title>
+    <link rel="stylesheet" href="css/programacion.css">
+</head>
+<body>
+    <header>
+        <h1>PROGRAMACIÓN GENERAL - RADIO ONDA AZUL 2025</h1>
+    </header>
+
+    <div class="contenedor-principal">
+        <aside class="formulario-container">
+            <form id="programacionForm">
+                <h2>Agregar Programa</h2>
+                
+                <div class="form-group">
+                    <label for="diaSemana">Día de la semana:</label>
+                    <select id="diaSemana" name="diaSemana" required>
+                        <option value="">Seleccione un día</option>
+                        <option value="lunes">Lunes</option>
+                        <option value="martes">Martes</option>
+                        <option value="miercoles">Miércoles</option>
+                        <option value="jueves">Jueves</option>
+                        <option value="viernes">Viernes</option>
+                        <option value="sabado">Sábado</option>
+                        <option value="domingo">Domingo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="horaInicio">Hora de inicio:</label>
+                    <input type="time" id="horaInicio" name="horaInicio" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="horaFin">Hora de fin:</label>
+                    <input type="time" id="horaFin" name="horaFin" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="programa">Programa:</label>
+                    <input type="text" id="programa" name="programa" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="contenido">Contenido:</label>
+                    <textarea id="contenido" name="contenido" rows="4" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipoPrograma">Tipo de programa:</label>
+                    <select id="tipoPrograma" name="tipoPrograma">
+                        <option value="informativo">Informativo</option>
+                        <option value="musical">Musical</option>
+                        <option value="cultural">Cultural</option>
+                        <option value="contratado">Espacio contratado</option>
+                        <option value="religioso">Religioso</option>
+                        <option value="deportivo">Deportivo</option>
+                        <option value="juvenil">Juvenil</option>
+                        <option value="infantil">Infantil</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="idioma">Idioma:</label>
+                    <select id="idioma" name="idioma">
+                        <option value="español">Español</option>
+                        <option value="quechua">Quechua</option>
+                        <option value="aymara">Aymara</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit">Guardar</button>
+                    <button type="button" id="limpiar">Limpiar</button>
+                </div>
+            </form>
+        </aside>
+
+        <main class="tabla-container">
+            <div class="programacion-header">
+                <h2>Programación Actual</h2>
+                <div class="filtros">
+                    <select id="filtroDia">
+                        <option value="todos">Todos los días</option>
+                        <option value="lunes">Lunes</option>
+                        <option value="martes">Martes</option>
+                        <option value="miercoles">Miércoles</option>
+                        <option value="jueves">Jueves</option>
+                        <option value="viernes">Viernes</option>
+                        <option value="sabado">Sábado</option>
+                        <option value="domingo">Domingo</option>
+                    </select>
+                    <button id="aplicarFiltro">Filtrar</button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="tablaProgramacion">
+                    <thead>
+                        <tr>
+                            <th>Día</th>
+                            <th>Hora</th>
+                            <th>Programa</th>
+                            <th>Contenido</th>
+                            <th>Tipo</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Los datos se cargarán dinámicamente con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+             <div class="paginacion-container">
+                <div class="paginacion-info" id="paginacionInfo"></div>
+                <div class="paginacion-controls">
+                    <button id="btnPrimeraPagina" class="paginacion-btn">«</button>
+                    <button id="btnPaginaAnterior" class="paginacion-btn">‹</button>
+                    <div id="numerosPagina" class="numeros-pagina"></div>
+                    <button id="btnPaginaSiguiente" class="paginacion-btn">›</button>
+                    <button id="btnUltimaPagina" class="paginacion-btn">»</button>
+                </div>
+                <div class="paginacion-registros">
+                    <label>Mostrar: </label>
+                    <select id="selectRegistros">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
+                    <span>registros por página</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/programacion.js"></script>
+</body>
+</html>
