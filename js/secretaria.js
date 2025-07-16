@@ -6,15 +6,45 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    // Cargar programación de radio
+    const programacionRadio = JSON.parse(localStorage.getItem('programacionRadio')) || [];
+    
     // Configurar eventos
     document.getElementById('logout').addEventListener('click', handleLogout);
     document.getElementById('comunicadoForm').addEventListener('submit', handleSubmit);
     document.getElementById('searchInput').addEventListener('input', handleSearch);
-    document.getElementById('filterProgram').addEventListener('change', filterComunicados);
-
+    
+    // Inicializar filtro de programas
+    initProgramFilter(programacionRadio);
+    
     // Cargar comunicados al iniciar
     loadComunicados();
 });
+
+// Inicializar filtro de programas con datos reales
+function initProgramFilter(programacion) {
+    const filterProgram = document.getElementById('filterProgram');
+    filterProgram.innerHTML = '<option value="">Todos los programas</option>';
+    
+    // Obtener programas únicos y ordenados
+    const programasUnicos = [
+        ...new Set(
+            programacion.flatMap(prog => prog.dias.map(() => prog.programa))
+        )
+    ].sort();
+    
+    // Llenar el select
+    programasUnicos.forEach(programa => {
+        const option = document.createElement('option');
+        option.value = programa;
+        option.textContent = programa;
+        filterProgram.appendChild(option);
+    });
+    
+    // Agregar evento de filtrado
+    filterProgram.addEventListener('change', filterComunicados);
+}
+
 
 // Obtener solo comunicados (filtrado desde announcements)
 function getComunicados() {
@@ -36,13 +66,33 @@ function handleLogout() {
 // Manejar envío de formulario
 function handleSubmit(e) {
     e.preventDefault();
-    saveComunicado();
+    
+    const form = document.getElementById('comunicadoForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    if (submitBtn.dataset.editingId) {
+        updateComunicado(submitBtn.dataset.editingId);
+    } else {
+        saveComunicado();
+    }
 }
 
 // Guardar nuevo comunicado
 function saveComunicado() {
     const form = document.getElementById('comunicadoForm');
+    const programacionRadio = JSON.parse(localStorage.getItem('programacionRadio')) || [];
     
+    // Validar que el programa exista
+    const programaSeleccionado = form.program.value;
+    const programaExiste = programacionRadio.some(prog => 
+        prog.programa === programaSeleccionado
+    );
+    
+    if (!programaExiste && programaSeleccionado) {
+        showAlert('El programa seleccionado no existe en la programación', 'error');
+        return;
+    }
+
     const newComunicado = {
         id: Date.now(),
         type: 'comunicado',
@@ -56,19 +106,11 @@ function saveComunicado() {
         createdAt: new Date().toISOString()
     };
 
-    // Obtener todos los announcements existentes
     const announcements = JSON.parse(localStorage.getItem('announcements')) || [];
-    
-    // Agregar el nuevo comunicado
     announcements.push(newComunicado);
-    
-    // Guardar de vuelta en announcements
     saveAllAnnouncements(announcements);
 
-    // Resetear formulario
     form.reset();
-    
-    // Recargar lista y mostrar feedback
     loadComunicados();
     showAlert('Comunicado registrado exitosamente!', 'success');
 }
@@ -84,24 +126,24 @@ function renderComunicados(comunicados) {
     const tbody = document.querySelector('#comunicadosTable tbody');
     tbody.innerHTML = '';
 
-    // Ordenar por fecha más reciente
     comunicados.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     comunicados.forEach(com => {
         const row = document.createElement('tr');
+        row.dataset.program = com.program; // Para filtrado
         row.innerHTML = `
-        <td>${com.clientName}</td>
-        <td>${com.program}</td>
-        <td>${com.scheduleTime}</td>
-        <td>${com.invoiceNumber}</td>
-        <td><span class="priority-${com.priority}">${
-            com.priority === 'urgent' ? 'Urgente' : 
-            com.priority === 'high' ? 'Alta' : 'Normal'
-        }</span></td>
-        <td>
-            <button class="btn-action edit-btn" data-id="${com.id}"><i class="fas fa-edit"></i></button>
-            <button class="btn-action delete-btn" data-id="${com.id}"><i class="fas fa-trash-alt"></i></button>
-        </td>
+            <td>${com.clientName}</td>
+            <td>${com.program}</td>
+            <td>${formatTime(com.scheduleTime)}</td>
+            <td>${com.invoiceNumber}</td>
+            <td><span class="priority-${com.priority}">${
+                com.priority === 'urgent' ? 'Urgente' : 
+                com.priority === 'high' ? 'Alta' : 'Normal'
+            }</span></td>
+            <td>
+                <button class="btn-action edit-btn" data-id="${com.id}"><i class="fas fa-edit"></i></button>
+                <button class="btn-action delete-btn" data-id="${com.id}"><i class="fas fa-trash-alt"></i></button>
+            </td>
         `;
         tbody.appendChild(row);
     });
@@ -116,6 +158,13 @@ function renderComunicados(comunicados) {
     });
 }
 
+// Formatear hora
+function formatTime(timeString) {
+    if (!timeString) return '';
+    const [hours, minutes] = timeString.split(':');
+    return `${hours}:${minutes}`;
+}
+
 // Buscar comunicados
 function handleSearch() {
     const searchTerm = this.value.toLowerCase();
@@ -123,7 +172,8 @@ function handleSearch() {
     
     const filtered = comunicados.filter(com => 
         com.clientName.toLowerCase().includes(searchTerm) || 
-        com.announcementText.toLowerCase().includes(searchTerm)
+        com.announcementText.toLowerCase().includes(searchTerm) ||
+        com.invoiceNumber.toLowerCase().includes(searchTerm)
     );
     
     renderComunicados(filtered);
@@ -132,15 +182,15 @@ function handleSearch() {
 // Filtrar por programa
 function filterComunicados() {
     const program = this.value;
-    const comunicados = getComunicados();
+    const rows = document.querySelectorAll('#comunicadosTable tbody tr');
     
-    if (!program) {
-        renderComunicados(comunicados);
-        return;
-    }
-    
-    const filtered = comunicados.filter(com => com.program === program);
-    renderComunicados(filtered);
+    rows.forEach(row => {
+        if (!program || row.dataset.program === program) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
 }
 
 // Editar comunicado
@@ -155,14 +205,13 @@ function editComunicado(id) {
     form.program.value = comunicado.program;
     form.scheduleTime.value = comunicado.scheduleTime;
     form.announcementText.value = comunicado.announcementText;
+    form.invoiceNumber.value = comunicado.invoiceNumber;
     form.priority.value = comunicado.priority;
     
-    // Cambiar el botón de submit a "Actualizar"
     const submitBtn = form.querySelector('button[type="submit"]');
     submitBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar Comunicado';
     submitBtn.dataset.editingId = id;
     
-    // Scroll al formulario
     document.querySelector('.form-section').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -170,18 +219,12 @@ function editComunicado(id) {
 function deleteComunicado(id) {
     if (!confirm('¿Estás seguro de eliminar este comunicado?')) return;
     
-    // Obtener todos los announcements
     const announcements = JSON.parse(localStorage.getItem('announcements')) || [];
-    
-    // Filtrar para eliminar solo el comunicado específico
     const updatedAnnouncements = announcements.filter(item => 
         !(item.id == id && item.type === 'comunicado')
     );
     
-    // Guardar cambios
     saveAllAnnouncements(updatedAnnouncements);
-    
-    // Recargar
     loadComunicados();
     showAlert('Comunicado eliminado correctamente', 'success');
 }
@@ -189,36 +232,29 @@ function deleteComunicado(id) {
 // Actualizar comunicado existente
 function updateComunicado(id) {
     const form = document.getElementById('comunicadoForm');
-    
-    // Obtener todos los announcements
     let announcements = JSON.parse(localStorage.getItem('announcements')) || [];
     const index = announcements.findIndex(com => com.id == id && com.type === 'comunicado');
     
     if (index === -1) return;
     
-    // Actualizar el comunicado
     announcements[index] = {
         ...announcements[index],
         clientName: form.clientName.value,
         program: form.program.value,
         scheduleTime: form.scheduleTime.value,
         announcementText: form.announcementText.value,
+        invoiceNumber: form.invoiceNumber.value,
         priority: form.priority.value,
         updatedAt: new Date().toISOString()
     };
     
-    // Guardar cambios
     saveAllAnnouncements(announcements);
-    
-    // Resetear formulario
     form.reset();
     
-    // Restaurar botón de submit
     const submitBtn = form.querySelector('button[type="submit"]');
     submitBtn.innerHTML = '<i class="fas fa-save"></i> Registrar Comunicado';
     delete submitBtn.dataset.editingId;
     
-    // Recargar lista y mostrar feedback
     loadComunicados();
     showAlert('Comunicado actualizado exitosamente!', 'success');
 }
